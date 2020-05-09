@@ -11,3 +11,35 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.App {
+  height: auto;
+  min-height: 100vh;
+  background: #ccc;
+  
+}
+
+.cards {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0;
+}
+
+.cards .follower-cards {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.cards .follower-cards .MuiPaper-root {
+  margin: 20px;
+  width: 25%;
+}
+
+.MuiPaper-root:hover {
+  box-shadow: 12px 12px 15px 0px #999;
+}

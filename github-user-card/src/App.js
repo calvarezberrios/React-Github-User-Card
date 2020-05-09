@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
-import GithubCard from "./components/GithubCard";
+import axios from "axios";
+import NavBar from "./components/NavBar";
+import CardsContainer from "./components/CardsContainer";
 
 export default class App extends Component {
   state = {
@@ -10,50 +12,56 @@ export default class App extends Component {
     curUserLogin: "calvarezberrios"
   }
 
-  
+  handleChanges = e => {
+    this.setState({
+      curUserLogin: e.target.value
+    })
+  }
+
+  handleSubmit = e => {
+    e.preventDefault();
+
+    if(this.state.curUserLogin) this.getUserData(this.state.curUserLogin);
+  }
 
   getUserData(login) {
-    fetch(`https://api.github.com/users/${login}`)
-      .then(res => res.json())
+
+    axios.get(`https://api.github.com/users/${login}`, {headers: {authorization: "token ba9e0f9615cbead78f989239f17ee24912efaec3"}})
       .then(res => {
         
-        if (res.message === "Not Found") {
-          console.error("cea: App.js: App: CDM: fetch error ", res.message);
-        } else {
           console.log("cea: App.js: App: CDM: fetch res ", res);
           this.setState({
             githubUser: {
               ...this.state.githubUser,
-              data: res
-            }
+              data: res.data,
+              followers: []
+            },
           });
           
-          fetch(res.followers_url)
-            .then(res => res.json())
+          axios.get(res.data.followers_url, {headers: {authorization: "token ba9e0f9615cbead78f989239f17ee24912efaec3"}})
             .then(followers => {
-              followers.forEach(follower => {
-                fetch(follower.url)
-                .then(res => res.json())
+              followers.data.forEach(follower => {
+                axios.get(follower.url, {headers: {authorization: "token ba9e0f9615cbead78f989239f17ee24912efaec3"}})
                 .then(res => {
-                  console.log("cea: App.js: App: CDM: fetch followers data ", res);
+                  console.log("cea: App.js: App: CDM: fetch followers data ", res.data);
                   this.setState({
                     githubUser: {
                       ...this.state.githubUser,
                       followers: [
                         ...this.state.githubUser.followers,
-                        res
+                        res.data
                       ]
                     }
                   })
                 })
-                .catch(err => console.log("cea: App.js: App: CDM: fetch followers ", err.message));
+                .catch(err => console.log("cea: App.js: App: CDM: fetch followers error", err.message));
               })
             })
-            .catch(err => console.log("cea: App.js: App: CDM: fetch followers ", err.message));
-        }
+            .catch(err => console.log("cea: App.js: App: CDM: fetch followers error", err.message));
+      
       })
       .catch(err => {
-        console.error("cea: App.js: App: CDM: fetch error ", err.message);
+        console.error("cea: App.js: App: CDM: fetch user error ", err.message);
       })
   }
 
@@ -65,15 +73,12 @@ export default class App extends Component {
   render() {
     return (
       <div className = "App">
-        <h1>Github User Card</h1>
-
-        <GithubCard user = {this.state.githubUser.data} />
-
-        <h2>Followers: </h2>
-
-        {this.state.githubUser.followers.map(follower => (
-          <GithubCard key = {follower.id} user = {follower} />
-        ))}
+        <NavBar user = {this.state.curUserLogin} handleChanges = {this.handleChanges} handleSubmit = {this.handleSubmit} />
+        {
+          this.state.githubUser.data.id ?
+          <CardsContainer user = {this.state.githubUser.data} followers = {this.state.githubUser.followers} /> :
+          null
+        }
       </div>
     );
   }
