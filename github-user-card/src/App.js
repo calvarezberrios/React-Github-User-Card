@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import axios from "axios";
+import AxiosWithAuth from "./AxiosWithAuth";
 import NavBar from "./components/NavBar";
 import CardsContainer from "./components/CardsContainer";
 
@@ -26,10 +26,10 @@ export default class App extends Component {
 
   getUserData(login) {
 
-    axios.get(`https://api.github.com/users/${login}`, {headers: {authorization: "token ba9e0f9615cbead78f989239f17ee24912efaec3"}})
+    AxiosWithAuth(`https://api.github.com/users/${login}`)
       .then(res => {
         
-          console.log("cea: App.js: App: CDM: fetch res ", res);
+          console.log("cea: App.js: App: CDM: fetch res ", res.data);
           this.setState({
             githubUser: {
               ...this.state.githubUser,
@@ -38,10 +38,10 @@ export default class App extends Component {
             },
           });
           
-          axios.get(res.data.followers_url, {headers: {authorization: "token ba9e0f9615cbead78f989239f17ee24912efaec3"}})
+          AxiosWithAuth(res.data.followers_url)
             .then(followers => {
               followers.data.forEach(follower => {
-                axios.get(follower.url, {headers: {authorization: "token ba9e0f9615cbead78f989239f17ee24912efaec3"}})
+                AxiosWithAuth(follower.url)
                 .then(res => {
                   console.log("cea: App.js: App: CDM: fetch followers data ", res.data);
                   this.setState({
